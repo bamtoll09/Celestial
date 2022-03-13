@@ -6,7 +6,7 @@ public class GravitySource : MonoBehaviour
 {
     public Transform[] satellites;
     
-    const float gravity = 9.81f;
+    const float G = 6.67f;
 
     void FixedUpdate() {
         for (int i=0; i<satellites.Length; ++i)
@@ -17,7 +17,7 @@ public class GravitySource : MonoBehaviour
 
                 float dist = difference.magnitude;
                 Vector3 gravityDirection = difference.normalized;
-                Vector3 gravityVector = (gravityDirection * gravity) * (GetComponent<Rigidbody>().mass * otherRigidbody.mass) / (dist * dist) ;
+                Vector3 gravityVector = (gravityDirection * G * 0.001f) * (GetComponent<Rigidbody>().mass * otherRigidbody.mass) / (dist * dist) ;
 
                 otherRigidbody.AddForce(gravityVector, ForceMode.Acceleration);
             }
