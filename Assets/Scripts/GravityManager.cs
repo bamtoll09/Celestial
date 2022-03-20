@@ -9,12 +9,10 @@ public class GravityManager : MonoBehaviour
 
     float G = 6.6738480f; // e-11
 
-    float meterToUnit = 3.125f; // e-6
-
     // Start is called before the first frame update
     void Start()
     {
-        G *= Mathf.Pow(meterToUnit, 3); // e-29
+        G *= Mathf.Pow(OrbitUtility.meter2unit, 3); // e-29
 
         earth = new Planet();
         earth.position = Vector3.zero;
@@ -22,9 +20,9 @@ public class GravityManager : MonoBehaviour
         earth.velocity = Vector3.zero;
 
         moon = new Planet();
-        moon.position = new Vector3(38.5f, 0f, 0f) * meterToUnit; // e+7-6 e+1
+        moon.position = new Vector3(38.5f, 0f, 0f) * OrbitUtility.meter2unit; // e+7-6 e+1
         moon.mass = 7.347f; // e+22
-        moon.velocity = new Vector3(0f, 102.2f, 0f) * meterToUnit; // e+1-6 = e-5
+        moon.velocity = new Vector3(0f, 102.2f, 0f) * OrbitUtility.meter2unit; // e+1-6 = e-5
 
         earth.velocity = -moon.velocity * moon.mass / earth.mass; // e-5;
 
@@ -42,14 +40,8 @@ public class GravityManager : MonoBehaviour
         moon.velocity = moon.velocity + moon.force / moon.mass * Time.deltaTime * timeScale * Mathf.Pow(10, -4); // e-5 / e+13-22 e-9 => e-5
         earth.velocity = earth.velocity + earth.force / earth.mass * Time.deltaTime * timeScale * Mathf.Pow(10, -4); // e-5
 
-        Debug.Log("R");
-        Debug.Log(Vector3.Normalize(r));
-        Debug.Log(moon.velocity);
-
         moon.position = moon.position + moon.velocity * Time.deltaTime * timeScale * Mathf.Pow(10, -6); // e+1 / e-5 => e+1
         earth.position = earth.position + earth.velocity * Time.deltaTime * timeScale * Mathf.Pow(10, -6); // e+1
-
-        Debug.Log(moon.position);
 
         objMoon.transform.position = moon.position;
         objEarth.transform.position = earth.position;
