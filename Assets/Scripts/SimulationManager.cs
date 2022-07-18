@@ -17,19 +17,46 @@ public class SimulationManager : MonoBehaviour
    public GameObject satellite;
 
    public Transform ECI_COORD;
+   
+   public Transform transformEarth;
+   public Transform transformSeoul;
+   public Transform centerLocation;
+
    public UICommunicator communicator;
 
    List<GameObject> m_Objects;
    List<Satellite> m_Satellites;
+   Site seoulEquator;
    float eTime;
 
    void Update() {
+      // Center Location
+      Eci eSeoul = seoulEquator.PositionEci(DateTime.UtcNow);
+      Vector3 seoulPos = new Vector3((float) eSeoul.Position.X, (float) eSeoul.Position.Z, (float) eSeoul.Position.Y);
+      seoulPos *= OrbitUtility.meter2unit;
+      seoulPos *= 0.001f;
+      centerLocation.position = seoulPos;
+
+      // Earth
+      Vector3 pos1 = transformSeoul.position;
+      Vector3 pos2 = centerLocation.position;
+      pos1.y = 0f;
+      pos2.y = 0f;
+      float sAngle = Quaternion.Angle(
+         Quaternion.Euler(pos1),
+         Quaternion.Euler(pos2)
+      );
+      Debug.Log(sAngle);
+      if (sAngle > 0.5f)
+         transformEarth.Rotate(Vector3.up, sAngle);
+
+      // Satellite
       for (int i=0; i<m_Objects.Count; ++i)
       {
-         Eci eci = m_Satellites[i].PositionEci(eTime / 60.0);
+         Eci eci = m_Satellites[i].PositionEci(DateTime.UtcNow);
          Vector3 pos = new Vector3((float)eci.Position.X, (float)eci.Position.Z, (float)eci.Position.Y);
          pos *= OrbitUtility.meter2unit;
-         pos *= Mathf.Pow(10, -3);
+         pos *= 0.001f;
          m_Objects[i].transform.position = pos;
       }
 
@@ -51,14 +78,16 @@ public class SimulationManager : MonoBehaviour
       obj.transform.SetParent(ECI_COORD);
       m_Objects.Add(obj);
 
+      // UI Satellite Count
       communicator.ChangeSatelliteCount(m_Objects.Count.ToString());
    }
 
-   // /////////////////////////////////////////////////////////////////////
    void Start()
    {
       m_Objects = new List<GameObject>();
       m_Satellites = new List<Satellite>();
+
+      seoulEquator = new Site(37.56, 126.99, 0.038, "Seoul");
 
       // Sample code to test the SGP4 and SDP4 implementation. The test
       // TLEs come from the NORAD document "Space Track Report No. 3".
@@ -107,12 +136,13 @@ public class SimulationManager : MonoBehaviour
       */
    }
 
+   #region PrintPosVel
    // //////////////////////////////////////////////////////////////////////////
    //
    // Routine to output position and velocity information of satellite
    // in orbit described by TLE information.
    //
-   /* static async */ void PrintPosVel(Tle tle)
+   void PrintPosVel(Tle tle)
    {
       const int Step = 360;
 
@@ -183,4 +213,5 @@ public class SimulationManager : MonoBehaviour
                      e.Velocity.Z);
       }
    }
+   #endregion
 }
